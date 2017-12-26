@@ -13,7 +13,7 @@ import static java.lang.Integer.parseInt;
  * Created by vikas on 26-12-2017.
  */
 
-public class expRecurEventBuilder {
+public class ExpRecurEventBuilder extends Event {
     public int ID;
     public String eventName;
     public String eventPrevDate;
@@ -28,7 +28,8 @@ public class expRecurEventBuilder {
 
     private ContentValues contentValues;
 
-    public expRecurEventBuilder(String id,String nam, String modifiedDate, String delete ,String newDate ,String newTime, String newDuration, String venue, String courName, String prof, String credit) throws ParseException {
+    public ExpRecurEventBuilder(String id, String nam, String modifiedDate, String delete , String newDate , String newTime, String newDuration, String venue, String courName, String prof, String credit) throws ParseException {
+        super(Event.EXP_RECUR_EVENT_BUILDER);
         this.ID = parseInt(id);
         this.eventName = nam;
         this.prof = prof;

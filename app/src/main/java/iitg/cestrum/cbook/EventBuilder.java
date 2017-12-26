@@ -13,12 +13,11 @@ import static java.lang.Integer.parseInt;
  * Created by vikas on 25-12-2017.
  */
 
-public class eventBuilder {
+public class EventBuilder extends  Event{
+
     public int ID;
     public String eventName;
-  //  public Date eventDate;
     public String eventDate;
-  //  public Time eventTime;
     public String eventTime;
     public int eventDuration;
     public String eventVenue;
@@ -32,8 +31,8 @@ public class eventBuilder {
     // Recur event properties
     private ContentValues contentValues;
 
-    public eventBuilder(String id,String nam, String date, String time, String duration, String venue, String courName, String prof, String credit) throws ParseException {
-
+    public EventBuilder(String id, String nam, String date, String time, String duration, String venue, String courName, String prof, String credit) throws ParseException {
+        super(Event.EVENT_BUILDER);
         this.ID = parseInt(id);
         this.eventName = nam;
         this.prof = prof;

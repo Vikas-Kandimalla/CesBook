@@ -13,13 +13,10 @@ import static java.lang.Integer.parseInt;
  * Created by vikas on 26-12-2017.
  */
 
-public class recurEventBuilder {
+public class RecurEventBuilder extends Event {
     public int ID;
     public String eventName;
     public String eventDate;
-
-
-
     public String eventTime;
     public int eventDuration;
     public String eventVenue;
@@ -33,9 +30,8 @@ public class recurEventBuilder {
 
     private ContentValues contentValues;
 
-    public recurEventBuilder(String id, String nam, String sDate, String sTime, String duration, String eDate, String rType, String rLength, String rData, String venue, String courName, String prof, String credit) throws ParseException {
-
-
+    public RecurEventBuilder(String id, String nam, String sDate, String sTime, String duration, String eDate, String rType, String rLength, String rData, String venue, String courName, String prof, String credit) throws ParseException {
+        super(Event.RECUR_EVENT_BUILDER);
         this.ID = parseInt(id);
         this.eventName = nam;
         this.prof = prof;

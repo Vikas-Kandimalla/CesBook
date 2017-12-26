@@ -1,11 +1,9 @@
 package iitg.cestrum.cbook;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.content.Intent;
 import android.database.sqlite.SQLiteOpenHelper;
-
-import java.io.File;
 
 /**
  * Created by vikas on 25-12-2017.
@@ -14,13 +12,13 @@ import java.io.File;
 public class DBaseHandler extends SQLiteOpenHelper {
 
     private final String dBaseName;
-    private final int dBaseVersion;
+    private static final int dBaseVersion = 1;
     private final String[] columns = {"ID","name" , "eventData" , "eventTime" , "eventDuration" ,"eventVenue", "courseName", "prof" , "credits"};
 
-    public DBaseHandler(Context context,String dbName,int dbVersion) {
-        super(context,dbName,null,dbVersion);
+    public DBaseHandler(Context context,String dbName) {
+        super(context,dbName,null,this.dBaseVersion);
+        //super.setWriteAheadLoggingEnabled(true);
         this.dBaseName = dbName;
-        this.dBaseVersion = dbVersion;
 
     }
 
@@ -91,29 +89,47 @@ public class DBaseHandler extends SQLiteOpenHelper {
 
     }
 
-    public long addEvent(eventBuilder event) {
+    public long addEvent(EventBuilder event) {
         SQLiteDatabase db = this.getWritableDatabase();
         long temp = db.insert("events",null,event.getContentValues());
         db.close();
         return temp;
     }
 
-    public long addEvent(expRecurEventBuilder event){
+    public long addEvent(ExpRecurEventBuilder event){
         SQLiteDatabase db = this.getWritableDatabase();
         long temp = db.insert("exp_recur_events",null,event.getContentValues());
         db.close();
         return temp;
     }
-    public long addEvent(recurEventBuilder event){
+    public long addEvent(RecurEventBuilder event){
         SQLiteDatabase db = this.getWritableDatabase();
         long temp = db.insert("exp_recur_events",null,event.getContentValues());
         db.close();
         return temp;
     }
 
-
-
-
+    public Event getEvent( String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy) throws Exception{
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(table,columns,selection,selectionArgs,groupBy,having,orderBy);
+        if (cursor == null ){
+            return null;
+        }
+        cursor.moveToFirst();
+        if(table.equals("events")){
+            EventBuilder event = new EventBuilder(cursor.getString(0),cursor.getString(1),cursor.getString(2),cursor.getString(3),cursor.getString(4),cursor.getString(5),cursor.getString(6),cursor.getString(7),cursor.getString(8));
+            return event;
+        }
+        else if (table.equals("recur_events")){
+            RecurEventBuilder recurEventBuilder = new RecurEventBuilder(cursor.getString(0),cursor.getString(1),cursor.getString(2),cursor.getString(3),cursor.getString(4),cursor.getString(5),cursor.getString(6),cursor.getString(7),cursor.getString(8),cursor.getString(9),cursor.getString(10),cursor.getString(11),cursor.getString(13));
+            return recurEventBuilder;
+        }
+        else if (table.equals("exp_recur_events")) {
+            ExpRecurEventBuilder expRecurEventBuilder = new ExpRecurEventBuilder(cursor.getString(0),cursor.getString(1),cursor.getString(2),cursor.getString(3),cursor.getString(4),cursor.getString(5),cursor.getString(6),cursor.getString(7),cursor.getString(8),cursor.getString(9),cursor.getString(10));
+            return expRecurEventBuilder;
+        }
+        else return null;
+    }
 
 }
 
