@@ -15,7 +15,6 @@ public class DBaseHandler extends SQLiteOpenHelper {
 
     private final String dBaseName;
     private final int dBaseVersion;
-    private final String tableName = "events";
     private final String[] columns = {"ID","name" , "eventData" , "eventTime" , "eventDuration" ,"eventVenue", "courseName", "prof" , "credits"};
 
     public DBaseHandler(Context context,String dbName,int dbVersion) {
@@ -30,25 +29,25 @@ public class DBaseHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db){
 
-        String CREATE_TABLE_EVENTS = "CREATE TABLE events ( " +
-                "ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "name VARCHAR(50) NOT NULL, " +
-                "eventDate DATE NOT NULL" +
-                "eventTime TIME NOT NULL" +
-                "eventDuration INT NOT NULL" +
-                "eventVenue VARCHAR(50) DEFAULT NULL" +
-                "courseName VARCHAR(100) DEFAULT NULL" +
-                "prof VARCHAR(50) DEFAULT NULL" +
-                "credits VARCHAR(50) DEFAULT NULL" +
-                "recordTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP );";
+        String CREATE_TABLE_EVENTS = "CREATE TABLE `events` ( " +
+                "`ID` INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "`name` VARCHAR(50) NOT NULL, " +
+                "`eventDate` DATE NOT NULL," +
+                "`eventTime` TIME NOT NULL," +
+                "`eventDuration` INT NOT NULL," +
+                "`eventVenue` VARCHAR(50) DEFAULT NULL," +
+                "`courseName` VARCHAR(100) DEFAULT NULL," +
+                "`prof` VARCHAR(50) DEFAULT NULL," +
+                "`credits` VARCHAR(50) DEFAULT NULL" +
+                ");";
 
         String CREATE_TABLE_RECUR_EVENTS = "CREATE TABLE `recur_events` (" +
                 "  `ID` int(11) PRIMARY KEY NOT NULL," +
                 "  `name` varchar(255) NOT NULL," +
-                "  `startTime` time NOT NULL," +
-                "  `duration` int(11) NOT NULL," +
-                "  `startDate` date NOT NULL," +
-                "  `endDate` date NOT NULL DEFAULT '9999-12-31'," +
+                "  `eventTime` time NOT NULL," +
+                "  `eventDuration` int(11) NOT NULL," +
+                "  `eventDate` date NOT NULL," +
+                "  `eventEndDate` date NOT NULL DEFAULT '9999-12-31'," +
                 "  `recurType` int(11) NOT NULL," +
                 "  `recurLength` int(11) NOT NULL," +
                 "  `recurData` varchar(10) NOT NULL," +
@@ -92,9 +91,27 @@ public class DBaseHandler extends SQLiteOpenHelper {
 
     }
 
-    public void addEvent() {
-
+    public long addEvent(eventBuilder event) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        long temp = db.insert("events",null,event.getContentValues());
+        db.close();
+        return temp;
     }
+
+    public long addEvent(expRecurEventBuilder event){
+        SQLiteDatabase db = this.getWritableDatabase();
+        long temp = db.insert("exp_recur_events",null,event.getContentValues());
+        db.close();
+        return temp;
+    }
+    public long addEvent(recurEventBuilder event){
+        SQLiteDatabase db = this.getWritableDatabase();
+        long temp = db.insert("exp_recur_events",null,event.getContentValues());
+        db.close();
+        return temp;
+    }
+
+
 
 
 
