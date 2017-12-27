@@ -1,6 +1,7 @@
 package iitg.cestrum.cbook;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 
 import java.sql.Time;
 import java.text.ParseException;
@@ -28,7 +29,8 @@ public class ExpRecurEventBuilder extends Event {
 
     private ContentValues contentValues;
 
-    public ExpRecurEventBuilder(String id, String nam, String modifiedDate, String delete , String newDate , String newTime, String newDuration, String venue, String courName, String prof, String credit) throws ParseException {
+    public ExpRecurEventBuilder(String id, String nam, String modifiedDate, String newDate , String newTime, String newDuration,String delete, String venue, String courName, String prof, String credit) throws ParseException {
+
         super(Event.EXP_RECUR_EVENT_BUILDER);
         this.ID = parseInt(id);
         this.eventName = nam;
@@ -41,6 +43,44 @@ public class ExpRecurEventBuilder extends Event {
         this.eventTime =      newTime;                              //new Time(new SimpleDateFormat("HH:mm:ss").parse(newTime).getTime());
         this.eventNewDate =    newDate;                             //new SimpleDateFormat("yyyy-MM-dd").parse(newDate);
         this.deleteEvent = delete;
+
+    }
+
+    public ExpRecurEventBuilder() {
+        super(Event.EXP_RECUR_EVENT_BUILDER);
+    }
+
+    public ExpRecurEventBuilder(Cursor c){
+        super(Event.EXP_RECUR_EVENT_BUILDER);
+        /*
+        "  `ID` int(11) NOT NULL," +
+                "  `name` varchar(255) NOT NULL," +
+                "  `modifiedDate` date NOT NULL," +
+                "  `newDate` date NOT NULL," +
+                "  `newStartTime` time NOT NULL," +
+                "  `newDuration` int(11) NOT NULL," +
+                "  `deleteEvent` int(1) NOT NULL," +
+                "  `eventVenue` varchar(10) DEFAULT NULL," +
+                "  `courseName` varchar(255) DEFAULT NULL" +
+                "  `prof` varchar(30) DEFAULT NULL," +
+                "  `credits` varchar(10) DEFAULT NULL," +
+         */
+
+        this.ID = c.getInt(0);
+        this.eventName = c.getString(1);
+        this.eventPrevDate = c.getString(2);
+        this.eventNewDate = c.getString(3);
+        this.eventTime = c.getString(4);
+        this.eventDuration = c.getInt(5);
+        this.deleteEvent = c.getString(6);
+        this.eventVenue = c.getString(7);
+        this.courseName = c.getString(8);
+        this.prof = c.getString(9);
+        this.credits = c.getString(10);
+
+
+
+
     }
 
     public Date getEventPrevDate() throws ParseException {
@@ -84,6 +124,20 @@ public class ExpRecurEventBuilder extends Event {
 
         return contentValues;
 
+    }
+
+    public void setEventData(Cursor c){
+        this.ID = c.getInt(0);
+        this.eventName = c.getString(1);
+        this.eventPrevDate = c.getString(2);
+        this.eventNewDate = c.getString(3);
+        this.eventTime = c.getString(4);
+        this.eventDuration = c.getInt(5);
+        this.deleteEvent = c.getString(6);
+        this.eventVenue = c.getString(7);
+        this.courseName = c.getString(8);
+        this.prof = c.getString(9);
+        this.credits = c.getString(10);
     }
 
 
