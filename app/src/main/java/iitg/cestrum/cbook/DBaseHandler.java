@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,6 +19,7 @@ import java.util.Locale;
 
 public class DBaseHandler extends SQLiteOpenHelper {
 
+    private final static String TAG = "CBook";
     private final String dBaseName;
     private static final int dBaseVersion = 1;
     private final String[] columns = {"ID","name" , "eventData" , "eventTime" , "eventDuration" ,"eventVenue", "courseName", "prof" , "credits"};
@@ -404,7 +406,7 @@ public class DBaseHandler extends SQLiteOpenHelper {
 
                     case 4:
                         // Recurring yearly
-
+                        Log.e(TAG," Yearly recurring type not added yet");
                         break;
 
                     default:
