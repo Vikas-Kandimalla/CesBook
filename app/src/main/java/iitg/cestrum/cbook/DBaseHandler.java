@@ -20,19 +20,19 @@ import java.util.Locale;
 public class DBaseHandler extends SQLiteOpenHelper {
 
     private final static String TAG = "CBook";
-    private final String dBaseName;
+    private final static String dBaseName = "localDB";
     private static final int dBaseVersion = 1;
     private final String[] columns = {"ID","name" , "eventData" , "eventTime" , "eventDuration" ,"eventVenue", "courseName", "prof" , "credits"};
     private EventBuilder[] eventBuilders;
-    private RecurEventBuilder[] recurEventBuilders;
-    private ExpRecurEventBuilder[] expRecurEventBuilders;
+    private RecurEventBuilder recurEventBuilders;
+    //private ExpRecurEventBuilder expRecurEventBuilders;
     private static int size=100;
 
 
-    public DBaseHandler(Context context,String dbName) {
-        super(context,dbName,null,this.dBaseVersion);
-        //super.setWriteAheadLoggingEnabled(true);
-        this.dBaseName = dbName;
+    public DBaseHandler(Context context) {
+        super(context,dBaseName,null,dBaseVersion);
+        super.setWriteAheadLoggingEnabled(true);
+
 
     }
 
@@ -54,41 +54,58 @@ public class DBaseHandler extends SQLiteOpenHelper {
                 ");";
 
         String CREATE_TABLE_RECUR_EVENTS = "CREATE TABLE `recur_events` (" +
-                "  `ID` int(11) PRIMARY KEY NOT NULL," +
+                "  `ID` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
                 "  `name` varchar(255) NOT NULL," +
                 "  `eventDate` date NOT NULL," +
                 "  `eventTime` time NOT NULL," +
                 "  `eventDuration` int(11) NOT NULL," +
                 "  `eventEndDate` date NOT NULL DEFAULT '9999-12-31'," +
-                "  `recurType` int(11) NOT NULL," +
-                "  `recurLength` int(11) NOT NULL," +
+                "  `recurType` INTEGER NOT NULL," +
+                "  `recurLength` INTEGER NOT NULL," +
                 "  `recurData` varchar(10) NOT NULL," +
                 "  `eventVenue` varchar(10) DEFAULT NULL," +
-                "  `courseName` varchar(255) DEFAULT NULL" +
+                "  `courseName` varchar(255) DEFAULT NULL," +
                 "  `prof` varchar(30)  DEFAULT NULL," +
-                "  `credits` varchar(10) DEFAULT NULL," +
+                "  `credits` varchar(10) DEFAULT NULL" +
                 ");";
 
 
         String TABLE_EXP_RECUR_EVENTS = "CREATE TABLE `exp_recur_events` (" +
-                "  `ID` int(11) NOT NULL," +
+                "  `ID` INTEGER NOT NULL," +
                 "  `name` varchar(255) NOT NULL," +
                 "  `modifiedDate` date NOT NULL," +
                 "  `newDate` date NOT NULL," +
                 "  `newStartTime` time NOT NULL," +
-                "  `newDuration` int(11) NOT NULL," +
-                "  `deleteEvent` int(1) NOT NULL," +
+                "  `newDuration` INTEGER NOT NULL," +
+                "  `deleteEvent` INTEGER NOT NULL," +
                 "  `eventVenue` varchar(10) DEFAULT NULL," +
-                "  `courseName` varchar(255) DEFAULT NULL" +
+                "  `courseName` varchar(255) DEFAULT NULL," +
                 "  `prof` varchar(30) DEFAULT NULL," +
                 "  `credits` varchar(10) DEFAULT NULL," +
                 "   CONSTRAINT myConstraint UNIQUE(`ID`,`modifiedDate`)" +
                 ");";
+        String TABLE_EVENTS_CACHE = "CREATE TABLE `events_cache` (" +
+                "   `ID` varchar(30) PRIMARY KEY NOT NULL," +
+                "   `name` VARCHAR(50) NOT NULL, " +
+                "   `eventDate` DATE NOT NULL," +
+                "   `eventTime` TIME NOT NULL," +
+                "   `eventDuration` INT NOT NULL," +
+                "   `eventVenue` VARCHAR(50) DEFAULT NULL," +
+                "   `courseName` VARCHAR(100) DEFAULT NULL," +
+                "   `prof` VARCHAR(50) DEFAULT NULL," +
+                "   `credits` VARCHAR(50) DEFAULT NULL," +
+                "   `parentID` INTEGER NOT NULL," +
+                "   `parentRecurType` INTEGER NOT NULL," +
+                "   `parentRecurLength` INTEGER NOT NULL," +
+                "   `parentRecurData` VARCHAR(10) DEFAULT NULL," +
+                "   `isModified` INT(1) DEFAULT 0" +
+                "    );";
 
 
         db.execSQL(CREATE_TABLE_EVENTS);
         db.execSQL(CREATE_TABLE_RECUR_EVENTS);
         db.execSQL(TABLE_EXP_RECUR_EVENTS);
+        db.execSQL(TABLE_EVENTS_CACHE);
 
     }
 
@@ -98,18 +115,125 @@ public class DBaseHandler extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS `events` ");
         db.execSQL("DROP TABLE IF EXISTS `recur_events`");
         db.execSQL("DROP TABLE IF EXISTS `exp_recur_events` ");
-
+        db.execSQL("DROP TABLE IF EXISTS `events_cache`");
         onCreate(db);
 
     }
 
     public void deleteTables(){
         SQLiteDatabase db = this.getWritableDatabase();
+
         db.execSQL("DROP TABLE IF EXISTS `events` ");
         db.execSQL("DROP TABLE IF EXISTS `recur_events`");
         db.execSQL("DROP TABLE IF EXISTS `exp_recur_events` ");
+        db.execSQL("DROP TABLE IF EXISTS `events_cache`");
         db.close();
     }
+
+    public void resetTables() {
+        deleteTables();
+        createTables();
+    }
+
+    public void createTables() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String CREATE_TABLE_EVENTS = "CREATE TABLE `events` ( " +
+                "`ID` INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "`name` VARCHAR(50) NOT NULL, " +
+                "`eventDate` DATE NOT NULL," +
+                "`eventTime` TIME NOT NULL," +
+                "`eventDuration` INTEGER NOT NULL," +
+                "`eventVenue` VARCHAR(50) DEFAULT NULL," +
+                "`courseName` VARCHAR(100) DEFAULT NULL," +
+                "`prof` VARCHAR(50) DEFAULT NULL," +
+                "`credits` VARCHAR(10) DEFAULT NULL" +
+                ");";
+
+        String CREATE_TABLE_RECUR_EVENTS = "CREATE TABLE `recur_events` (" +
+                "  `ID` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                "  `name` varchar(255) NOT NULL," +
+                "  `eventDate` date NOT NULL," +
+                "  `eventTime` time NOT NULL," +
+                "  `eventDuration` INTEGER NOT NULL," +
+                "  `eventEndDate` date NOT NULL DEFAULT '9999-12-31'," +
+                "  `recurType` INTEGER NOT NULL," +
+                "  `recurLength` INTEGER NOT NULL," +
+                "  `recurData` varchar(10) NOT NULL," +
+                "  `eventVenue` varchar(30) DEFAULT NULL," +
+                "  `courseName` varchar(255) DEFAULT NULL," +
+                "  `prof` varchar(30)  DEFAULT NULL," +
+                "  `credits` varchar(10) DEFAULT NULL" +
+                ");";
+
+
+        String TABLE_EXP_RECUR_EVENTS = "CREATE TABLE `exp_recur_events` (" +
+                "  `ID` INTEGER NOT NULL," +
+                "  `name` varchar(255) NOT NULL," +
+                "  `modifiedDate` date NOT NULL," +
+                "  `newDate` date NOT NULL," +
+                "  `newStartTime` time NOT NULL," +
+                "  `newDuration` INTEGER NOT NULL," +
+                "  `deleteEvent` INTEGER NOT NULL," +
+                "  `eventVenue` varchar(10) DEFAULT NULL," +
+                "  `courseName` varchar(255) DEFAULT NULL," +
+                "  `prof` varchar(30) DEFAULT NULL," +
+                "  `credits` varchar(10) DEFAULT NULL," +
+                "   CONSTRAINT myConstraint UNIQUE(`ID`,`modifiedDate`)" +
+                ");";
+        String TABLE_EVENTS_CACHE = "CREATE TABLE `events_cache` (" +
+                "   `ID` varchar(30) PRIMARY KEY NOT NULL," +
+                "   `name` VARCHAR(50) NOT NULL, " +
+                "   `eventDate` DATE NOT NULL," +
+                "   `eventTime` TIME NOT NULL," +
+                "   `eventDuration` INT NOT NULL," +
+                "   `eventVenue` VARCHAR(50) DEFAULT NULL," +
+                "   `courseName` VARCHAR(100) DEFAULT NULL," +
+                "   `prof` VARCHAR(50) DEFAULT NULL," +
+                "   `credits` VARCHAR(50) DEFAULT NULL," +
+                "   `parentID` INTEGER NOT NULL," +
+                "   `parentRecurType` INTEGER NOT NULL," +
+                "   `parentRecurLength` INTEGER NOT NULL," +
+                "   `parentRecurData` VARCHAR(10) DEFAULT NULL," +
+                "   `isModified` INTEGER DEFAULT 0" +
+                ");";
+
+
+        db.execSQL(CREATE_TABLE_EVENTS);
+        db.execSQL(CREATE_TABLE_RECUR_EVENTS);
+        db.execSQL(TABLE_EXP_RECUR_EVENTS);
+        db.execSQL(TABLE_EVENTS_CACHE);
+
+        db.close();
+    }
+
+
+    public void clearEventsCache() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.execSQL("DROP TABLE IF EXISTS `events_cache`");
+
+        String TABLE_EVENTS_CACHE = "CREATE TABLE `events_cache` (" +
+                "   `ID` varchar(30) PRIMARY KEY NOT NULL," +
+                "   `name` VARCHAR(50) NOT NULL, " +
+                "   `eventDate` DATE NOT NULL," +
+                "   `eventTime` TIME NOT NULL," +
+                "   `eventDuration` INTEGER NOT NULL," +
+                "   `eventVenue` VARCHAR(50) DEFAULT NULL," +
+                "   `courseName` VARCHAR(100) DEFAULT NULL," +
+                "   `prof` VARCHAR(50) DEFAULT NULL," +
+                "   `credits` VARCHAR(50) DEFAULT NULL," +
+                "   `parentID` INTEGER NOT NULL," +
+                "   `parentRecurType` INTEGER NOT NULL," +
+                "   `parentRecurLength` INTEGER NOT NULL," +
+                "   `parentRecurData` VARCHAR(10) DEFAULT NULL," +
+                "   `isModified` INTEGER DEFAULT 0";
+
+        db.execSQL(TABLE_EVENTS_CACHE);
+
+        db.close();
+    }
+
 
     public long addEvent(EventBuilder event) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -118,20 +242,27 @@ public class DBaseHandler extends SQLiteOpenHelper {
         return temp;
     }
 
-    public long addEvent(ExpRecurEventBuilder event){
+    public long addExpRecurEvent(ExpRecurEventBuilder event){
         SQLiteDatabase db = this.getWritableDatabase();
         long temp = db.insertWithOnConflict("exp_recur_events",null,event.getContentValues(), SQLiteDatabase.CONFLICT_REPLACE);
         db.close();
         return temp;
     }
-    public long addEvent(RecurEventBuilder event){
+    public long addRecurEvent(RecurEventBuilder event){
         SQLiteDatabase db = this.getWritableDatabase();
-        long temp = db.insertWithOnConflict("exp_recur_events",null,event.getContentValues(), SQLiteDatabase.CONFLICT_REPLACE);
+        long temp = db.insertWithOnConflict("recur_events",null,event.getContentValues(), SQLiteDatabase.CONFLICT_REPLACE);
         db.close();
         return temp;
     }
 
-    public Event getEvent( String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy) throws Exception{
+    public long addEvent(EventCacheBuilder event){
+        SQLiteDatabase db = this.getWritableDatabase();
+        long temp = db.insertWithOnConflict("events_cache",null,event.getContentValues(), SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
+        return temp;
+    }
+
+    public Event getEvent( String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy){
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(table,columns,selection,selectionArgs,groupBy,having,orderBy);
         db.close();
@@ -139,19 +270,23 @@ public class DBaseHandler extends SQLiteOpenHelper {
             return null;
         }
         cursor.moveToFirst();
-        if(table.equals("events")){
-            EventBuilder event = new EventBuilder(cursor);
-            return event;
+        Event event;
+        switch (table) {
+            case "events":
+                    event = new EventBuilder(cursor);
+                    break;
+            case "recur_events":
+                    event = new RecurEventBuilder(cursor);
+                    break;
+            case "exp_recur_events":
+                    event = new ExpRecurEventBuilder(cursor);
+                    break;
+            default:
+                    event = null;
+                    break;
         }
-        else if (table.equals("recur_events")){
-            RecurEventBuilder recurEventBuilder = new RecurEventBuilder(cursor);
-            return recurEventBuilder;
-        }
-        else if (table.equals("exp_recur_events")) {
-            ExpRecurEventBuilder expRecurEventBuilder = new ExpRecurEventBuilder(cursor);
-            return expRecurEventBuilder;
-        }
-        else return null;
+        cursor.close();
+        return event;
     }
 
     public void populateEventCache(Date date) throws Exception {
@@ -183,38 +318,43 @@ public class DBaseHandler extends SQLiteOpenHelper {
 
 
         ArrayList<EventCacheBuilder> events = new ArrayList<>(size);
-
+        EventCacheBuilder tem;
         Cursor c;
         SQLiteDatabase db = this.getReadableDatabase();
-        c = db.rawQuery("SELECT * FROM `events`",null);
+        String sql1 = "SELECT * FROM `events` WHERE `eventDate` >= \""+ sDateString + "\"AND `eventDate` <= \""+ eDateString + "\" ORDER BY `eventDate` ASC, `eventTime` ASC, `eventDuration` DESC ";
+        Log.d(TAG,sql1);
+        c = db.rawQuery(sql1,null);
         int i = 0;
         if (c.moveToFirst() ) {
-            eventBuilders = new EventBuilder[c.getCount()];
+         //   eventBuilders = new EventBuilder[c.getCount()];
 
             do{
-                   eventBuilders[i++].setEventData(c);
-                   events.add(new EventCacheBuilder(c));
+             //      eventBuilders[i++].setEventData(c);
+                   tem = new EventCacheBuilder(c);
+                   addEvent(tem);
+                   events.add(tem);
 
                }while(c.moveToNext());
         }
+        c.close();
 
-        c = db.rawQuery("SELECT * FROM `recur_events` WHERE `eventDate`  <= " + eDateString + "AND  `eventEndDate`  >="+ sDateString +" ORDER BY `eventDate` ASC, `eventTime` ASC ",null);
+        c = db.rawQuery("SELECT * FROM `recur_events` WHERE `eventDate`  <= \"" + eDateString + "\"AND  `eventEndDate`  >= \""+ sDateString +"\" ORDER BY `eventDate` ASC, `eventTime` ASC ",null);
 
         if (c.moveToFirst()){
             i = 0;
-            recurEventBuilders = new RecurEventBuilder[c.getCount()];
+
             Calendar finalSdate,finalEdate;
             do{
-                recurEventBuilders[i++].setEventData(c);
+                recurEventBuilders = new RecurEventBuilder(c);
 
-                int recurType = recurEventBuilders[i].recurType;
-                int recurLength = recurEventBuilders[i].recurLength;
+                int recurType = recurEventBuilders.recurType;
+                int recurLength = recurEventBuilders.recurLength;
 
 
                 // Calculate the date b/w Start and end Date
                 // Set the actual start and end dates by comparing it to the object
-                Calendar eventStartDate = stringToCalender(recurEventBuilders[i].eventDate);
-                Calendar eventEndDate = stringToCalender(recurEventBuilders[i].eventEndDate);
+                Calendar eventStartDate = stringToCalender(recurEventBuilders.eventDate);
+                Calendar eventEndDate = stringToCalender(recurEventBuilders.eventEndDate);
 
                 if ( sdate.compareTo(eventStartDate) > 0){         // if ( sdate > eventStartDate)
                     finalSdate = sdate;
@@ -222,12 +362,13 @@ public class DBaseHandler extends SQLiteOpenHelper {
                 else
                     finalSdate = eventStartDate;
 
-                if (edate.compareTo(eventEndDate) < 0)
+                if (edate.compareTo(eventEndDate) > 0)
                     finalEdate = eventEndDate;
                 else
                     finalEdate = edate;
 
 
+                Log.d("NewDebug","sDateString = " + sDateString + ", eDateString = " + eDateString + ", eventStartDate = " + recurEventBuilders.eventDate + ", eventEndDate = " + recurEventBuilders.eventEndDate + " finalSdate = " + calendarToString(finalSdate) + ", finalEdate = " + calendarToString(finalEdate));
 
 
                 int sdayDiff =   (int)((finalEdate.getTimeInMillis() - finalSdate.getTimeInMillis())/(1000 * 60 * 60 * 24));
@@ -239,6 +380,7 @@ public class DBaseHandler extends SQLiteOpenHelper {
                         // RECURRING DAY WISE
                         // use a loop
                         int iter = 0;
+                        Cursor t1;
                         boolean flag = false;
                         while (iter < sdayDiff ){
 
@@ -247,8 +389,29 @@ public class DBaseHandler extends SQLiteOpenHelper {
 
                                 temp = (Calendar) finalSdate.clone();
                                 temp.add(Calendar.DATE,iter);
-                                String id = recurEventBuilders[i].ID + "_" +recurEventBuilders[i].eventDate;
-                                events.add(new EventCacheBuilder(recurEventBuilders[i],id,calendarToString(temp)));
+                                String id = recurEventBuilders.ID + "_" +recurEventBuilders.eventDate;
+                                Log.d("NewDebug","This loop is executed : " + id + " iter : " + iter + " date : " +calendarToString(temp));
+                                String sql = "SELECT * FROM `exp_recur_events` WHERE `ID` = " + recurEventBuilders.ID + " " + "AND `modifiedDate` = " + calendarToString(temp);
+                                t1 = query(sql,null);
+
+                                if (t1.moveToFirst()){
+                                    // There are no exceptions for this case
+                                    ExpRecurEventBuilder er = new ExpRecurEventBuilder(t1);
+                                    tem = new EventCacheBuilder(er,recurEventBuilders,id,calendarToString(temp));
+                                    addEvent(tem);
+                                    events.add(tem);
+
+                                }
+                                else{
+                                    tem = new EventCacheBuilder(recurEventBuilders,id,calendarToString(temp));
+                                    addEvent(tem);
+                                    events.add(tem);
+                                }
+                                t1.close();
+
+
+
+
                                 iter += recurLength;
 
                             }
@@ -260,20 +423,26 @@ public class DBaseHandler extends SQLiteOpenHelper {
                                 if( ( (date_diff(temp,eventStartDate)) % recurLength) == 0  ){   // See if the event comes under current iteration  dates
 
                                     // Check for the exp recurring events
-                                    String sql = "SELECT * FROM `exp_recur_events` WHERE `ID` = " + recurEventBuilders[i].ID + "AND `modifiedDate` = " + calendarToString(temp);
-                                    Cursor t = db.rawQuery(sql,null);
-                                    String id = recurEventBuilders[i].ID + "_" +recurEventBuilders[i].eventDate;
+                                    String sql = "SELECT * FROM `exp_recur_events` WHERE `ID` = " + recurEventBuilders.ID + " " + "AND `modifiedDate` = " + calendarToString(temp);
+                                    Cursor t = query(sql,null);
+                                    String tempDate = calendarToString(temp);
+                                    String id = recurEventBuilders.ID + "_" +tempDate;
                                     if (t.moveToFirst()){
                                         // There are no exceptions for this case
                                         ExpRecurEventBuilder er = new ExpRecurEventBuilder(t);
-                                        events.add(new EventCacheBuilder(er,recurEventBuilders[i],id,calendarToString(temp)));
+                                        tem = new EventCacheBuilder(er,recurEventBuilders,id,tempDate);
+                                        addEvent(tem);
+                                        events.add(tem);
 
                                     }
                                     else{
-                                        events.add(new EventCacheBuilder(recurEventBuilders[i],id,calendarToString(temp)));
+                                        tem = new EventCacheBuilder(recurEventBuilders,id,tempDate);
+                                        addEvent(tem);
+                                        events.add(tem);
                                     }
                                     t.close();
                                     flag = true;
+                                    Log.d("NewDebug : ", id + " iter : " + iter + " date : " +calendarToString(temp) );
                                     iter += recurLength;
                                     continue;
 
@@ -284,6 +453,7 @@ public class DBaseHandler extends SQLiteOpenHelper {
 
 
                         }
+
 
 
 
@@ -304,15 +474,21 @@ public class DBaseHandler extends SQLiteOpenHelper {
                         int diffb = eventEndSunday.get(Calendar.DAY_OF_WEEK);
                         eventEndSunday.add(Calendar.DATE,8-diffb);
 
+                        Calendar eventStartDateSunday = (Calendar) eventStartDate.clone();
+                        int diffC = eventStartDateSunday.get(Calendar.DAY_OF_WEEK);
+                        eventStartDateSunday.add(Calendar.DATE,1-diffC);
+
+
+                        Log.d("NewDebug" , "eventStartSunday = " + calendarToString(eventStartSunday));
 
                         int numofweeks = date_diff(eventEndSunday,eventStartSunday)/7;
                         int t = 0;
                         for (iter = 0 ; iter <= numofweeks ; iter++){
-                            temp = (Calendar) finalSdate.clone();
+                            temp = (Calendar) eventStartSunday.clone();
                             temp.add(Calendar.DATE, iter*7);
-                            if (  ((date_diff(temp,eventStartDate)/7)%recurLength) == 0){  // IF Current week is a multiple of recur length
+                            if (  ((date_diff(temp,eventStartDateSunday)/7)%recurLength) == 0 ){  // IF Current week is a multiple of recur length
                                 // Check if the current date is in exception recur table
-                                boolean[] recurData = recurEventBuilders[i].getRecurData();
+                                boolean[] recurData = recurEventBuilders.getRecurData();
                                 for (int ii = 1; ii < 8;ii++){
                                     // See From Sunday to Saturday anc add events as per recurData
                                     // Check if the event end date is exceeded
@@ -324,19 +500,24 @@ public class DBaseHandler extends SQLiteOpenHelper {
                                         break;
                                     }
 
-                                    if( recurData[ii] ){
+                                    if( recurData[ii-1] && ((temp.getTimeInMillis() - eventStartDate.getTimeInMillis()) >= 0) ){
                                         // Check exp recur table for the current date.
-                                        String sql = "SELECT * FROM `exp_recur_events` WHERE `ID` = " + recurEventBuilders[i].ID + "AND `modifiedDate` = " + calendarToString(temp);
-                                        Cursor tt = db.rawQuery(sql,null);
-                                        String id = recurEventBuilders[i].ID + "_" +recurEventBuilders[i].eventDate;
+                                        String sql = "SELECT * FROM `exp_recur_events` WHERE `ID` = " + recurEventBuilders.ID +" "+ "AND `modifiedDate` = " + calendarToString(temp);
+                                        Cursor tt = query(sql,null);
+                                        String tempDate  =  calendarToString(temp);
+                                        String id = recurEventBuilders.ID + "_" + tempDate;
                                         if (tt.moveToFirst()){
                                             // There are no exceptions for this case
                                             ExpRecurEventBuilder er = new ExpRecurEventBuilder(tt);
-                                            events.add(new EventCacheBuilder(er,recurEventBuilders[i],id,calendarToString(temp)));
+                                            tem = new EventCacheBuilder(er,recurEventBuilders,id,tempDate);
+                                            addEvent(tem);
+                                            events.add(tem);
 
                                         }
                                         else{
-                                            events.add(new EventCacheBuilder(recurEventBuilders[i],id,calendarToString(temp)));
+                                            tem = new EventCacheBuilder(recurEventBuilders,id,tempDate);
+                                            addEvent(tem);
+                                            events.add(tem);
                                         }
                                         tt.close();
                                     }
@@ -362,7 +543,8 @@ public class DBaseHandler extends SQLiteOpenHelper {
                         int eventDate = eventStartDate.get(Calendar.DATE);
                         Calendar temp1 = (Calendar) finalSdate.clone();
                         int len = month_diff(finalEdate,finalSdate);
-                        for(int j = 0; j < len; j++ ){
+                        Log.d("NewDebug" , "Length of difference = " +len);
+                        for(int j = 0; j <= len; j++ ){
 
                             if( (month_diff(temp1,eventStartDate)%recurLength == 0 ) ){
 
@@ -373,16 +555,20 @@ public class DBaseHandler extends SQLiteOpenHelper {
                                 if( eventDate <= temp1.getActualMaximum(Calendar.DATE)){
 
                                     // Check for the exception
-                                    String tempDate = String.format(Locale.ENGLISH,"%04d-%02d-%02d",temp1.get(Calendar.YEAR),temp1.get(Calendar.MONTH),eventDate);
-                                    String id = recurEventBuilders[i].ID + "_" +recurEventBuilders[i].eventDate;
-                                    String sql = "SELECT * FROM `exp_recur_events` WHERE `ID` = " + recurEventBuilders[i].ID + "AND `modifiedDate` = " + tempDate;
-                                    Cursor tt = db.rawQuery(sql,null);
+                                    String tempDate = String.format(Locale.ENGLISH,"%04d-%02d-%02d",temp1.get(Calendar.YEAR),(temp1.get(Calendar.MONTH) + 1),eventDate);
+                                    String id = recurEventBuilders.ID + "_" +tempDate;
+                                    String sql = "SELECT * FROM `exp_recur_events` WHERE `ID` = " + recurEventBuilders.ID + " " +"AND `modifiedDate` = " + tempDate;
+                                    Cursor tt = query(sql,null);
                                     if(tt.moveToFirst()){
                                         ExpRecurEventBuilder er = new ExpRecurEventBuilder(tt);
-                                        events.add(new EventCacheBuilder(er,recurEventBuilders[i],id,tempDate));
+                                        tem = new EventCacheBuilder(er,recurEventBuilders,id,tempDate);
+                                        addEvent(tem);
+                                        events.add(tem);
                                     }
                                     else{
-                                        events.add(new EventCacheBuilder(recurEventBuilders[i],id,tempDate));
+                                        tem = new EventCacheBuilder(recurEventBuilders,id,tempDate);
+                                        addEvent(tem);
+                                        events.add(tem);
                                     }
                                     tt.close();
 
@@ -412,6 +598,7 @@ public class DBaseHandler extends SQLiteOpenHelper {
                     default:
                         // Error unknown recurType
                         // Throw an exception
+                        db.close();
                         throw new Exception("Unknown Recurring Type");
                 }
 
@@ -423,18 +610,38 @@ public class DBaseHandler extends SQLiteOpenHelper {
         }
 
 
-
+        db.close();
 
 
 
     }
 
-    public Event[] getEvents(Date date){
+    private Cursor query(String sql, String nullColumn){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(sql,null);
+       // db.close();
+        return c;
+    }
+
+    public EventCacheBuilder[] getEvents(Calendar date){
         // Getting the list of events in date
         // Need to calculate the overlap's if present
-        // Used in normal
-
-        return null;
+        String sql = "SELECT * FROM `events_cache` WHERE `eventDate` = " + calendarToString(date) + " ORDER BY `eventTime` ASC, `eventDuration` DESC";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor c = db.rawQuery(sql,null);
+        if( c == null){
+            db.close();
+            return null;
+        }
+        EventCacheBuilder[] event = new EventCacheBuilder[c.getCount()];
+        c.moveToFirst();
+        int i = 0;
+        do{
+            event[i++].setEventData(c);
+        }while(c.moveToNext());
+        c.close();
+        db.close();
+        return event;
     }
 
     private Calendar stringToCalender(String date) throws ParseException {

@@ -3,6 +3,9 @@ package iitg.cestrum.cbook;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -82,6 +85,20 @@ public class ExpRecurEventBuilder extends Event {
 
 
     }
+    public ExpRecurEventBuilder(JSONObject c) throws JSONException {
+        super(Event.RECUR_EVENT_BUILDER);
+        this.ID = c.getInt("ID");
+        this.eventName = c.getString("name");
+        this.eventPrevDate = c.getString("modifiedDate");
+        this.eventNewDate = c.getString("newDate");
+        this.eventTime = c.getString("newStartTime");
+        this.eventDuration = c.getInt("newDuration");
+        this.deleteEvent = c.getString("deleteEvent");
+        this.eventVenue = c.getString("eventVenue");
+        this.courseName = c.getString("courseName");
+        this.prof = c.getString("prof");
+        this.credits = c.getString("credits");
+    }
 
     public Date getEventPrevDate() throws ParseException {
         return new SimpleDateFormat("yyyy-MM-dd").parse(this.eventPrevDate);
@@ -112,7 +129,7 @@ public class ExpRecurEventBuilder extends Event {
 
         contentValues.put("modifiedDate", this.eventPrevDate);
         contentValues.put("newDate",this.eventNewDate);
-        contentValues.put("newTime",this.eventTime);
+        contentValues.put("newStartTime",this.eventTime);
         contentValues.put("newDuration", this.eventDuration);
         contentValues.put("deleteEvent",this.deleteEvent);
 

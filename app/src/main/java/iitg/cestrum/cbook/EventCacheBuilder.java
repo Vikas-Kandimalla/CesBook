@@ -30,7 +30,7 @@ public class EventCacheBuilder extends Event {
 
     public int parentID,parentRecurType,parentRecurLength;
     public String parentRecurData;
-    public boolean isModified;
+    public int isModified;
 
     // Parent properties if the event if a recur event Properties
 
@@ -72,7 +72,7 @@ public class EventCacheBuilder extends Event {
         this.parentRecurType = -1;
         this.parentRecurLength = -1;
         this.parentRecurData = null;
-        this.isModified = false;
+        this.isModified = 0;
 
     }
 
@@ -92,7 +92,7 @@ public class EventCacheBuilder extends Event {
         this.parentRecurType = r.recurType;
         this.parentRecurLength = r.recurLength;
         this.parentRecurData = r.recurData;
-        this.isModified = false;
+        this.isModified = 0;
 
     }
 
@@ -101,7 +101,7 @@ public class EventCacheBuilder extends Event {
 
         this.ID = id;
         this.eventName = e.eventName;
-        this.eventDate = date;
+        this.eventDate = e.eventNewDate;
         this.eventTime = e.eventTime;
         this.eventDuration = e.eventDuration;
         this.eventVenue = e.eventVenue;
@@ -113,7 +113,7 @@ public class EventCacheBuilder extends Event {
         this.parentRecurType = r.recurType;
         this.parentRecurLength = r.recurLength;
         this.parentRecurData = r.recurData;
-        this.isModified = true;
+        this.isModified = 1;
     }
 
 
@@ -132,11 +132,7 @@ public class EventCacheBuilder extends Event {
         this.parentRecurType = -1;
         this.parentRecurLength = -1;
         this.parentRecurData = null;
-        this.isModified = false;
-    }
-
-    public Date getDate() throws ParseException {
-        return new SimpleDateFormat("yyyy-MM-dd").parse(this.eventDate);
+        this.isModified = 0;
     }
 
     public Time getTime() throws ParseException {
@@ -154,10 +150,11 @@ public class EventCacheBuilder extends Event {
         contentValues.put("prof",this.prof);
         contentValues.put("credits",this.credits);
         contentValues.put("courseName",this.courseName);
+
         contentValues.put("parentID",this.parentID);
-        contentValues.put("parentRecurType",this.parentRecurData);
+        contentValues.put("parentRecurType",this.parentRecurType);
         contentValues.put("parentRecurLength",this.parentRecurLength);
-        contentValues.put("parentRecurDate",this.parentRecurData);
+        contentValues.put("parentRecurData",this.parentRecurData);
         contentValues.put("isModified",this.isModified);
 
         return contentValues;
@@ -175,6 +172,12 @@ public class EventCacheBuilder extends Event {
         this.courseName = c.getString(6);
         this.prof = c.getString(7);
         this.credits = c.getString(8);
+        this.parentID = c.getInt(9);
+        this.parentRecurType = c.getInt(10);
+        this.parentRecurLength = c.getInt(11);
+        this.parentRecurData = c.getString(12);
+        this.isModified = c.getInt(13);
+
 
     }
 

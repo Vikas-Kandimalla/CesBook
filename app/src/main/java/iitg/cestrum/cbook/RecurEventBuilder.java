@@ -3,6 +3,9 @@ package iitg.cestrum.cbook;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -88,6 +91,24 @@ public class RecurEventBuilder extends Event {
         this.courseName = c.getString(10);
         this.prof = c.getString(11);
         this.credits = c.getString(12);
+
+    }
+
+    public RecurEventBuilder(JSONObject c) throws JSONException {
+        super(Event.RECUR_EVENT_BUILDER);
+        this.ID = c.getInt("ID");
+        this.eventName = c.getString("name");
+        this.eventDate = c.getString("startDate");
+        this.eventTime = c.getString("startTime");
+        this.eventDuration = c.getInt("duration");
+        this.eventEndDate = c.getString("endDate");
+        this.recurType = c.getInt("recurType");
+        this.recurLength = c.getInt("recurLength");
+        this.recurData = c.getString("recurData");
+        this.eventVenue = c.getString("eventVenue");
+        this.courseName = c.getString("courseName");
+        this.prof = c.getString("prof");
+        this.credits = c.getString("credits");
 
     }
 

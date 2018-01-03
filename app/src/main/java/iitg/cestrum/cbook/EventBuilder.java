@@ -3,6 +3,9 @@ package iitg.cestrum.cbook;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -75,6 +78,19 @@ public class EventBuilder extends  Event{
         this.eventDate = date;                                                      // new SimpleDateFormat("yyyy-MM-dd").parse(date);
         this.eventTime = time;                                                      //new Time(new SimpleDateFormat("HH:mm:ss").parse(time).getTime());
 
+    }
+
+    public EventBuilder(JSONObject j) throws JSONException {
+        super(Event.EVENT_BUILDER);
+        this.ID = j.getInt("ID");
+        this.eventName = j.getString("name");
+        this.eventDate = j.getString("eventDate");
+        this.eventTime = j.getString("eventTime");
+        this.eventDuration = j.getInt("eventDuration");
+        this.eventVenue = j.getString("eventVenue");
+        this.courseName = j.getString("courseName");
+        this.prof = j.getString("prof");
+        this.credits = j.getString("credits");
     }
 
     public Date getDate() throws ParseException {
