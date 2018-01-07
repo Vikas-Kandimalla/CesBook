@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/event_agenda_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/border"
+    android:clickable="true"
+    android:focusable="true"
+    android:fadingEdge="none|vertical"
+    android:orientation="vertical"
+    android:layout_margin="5sp">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="1sp">
+
+        <TextView
+            android:id="@+id/serialNo"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@+id/event_container"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:background="#3d3d3d"
+            android:gravity="center"
+            android:paddingStart="0sp"
+            android:paddingEnd="1sp"
+            android:text="10"
+            android:textAlignment="center"
+            android:textColor="#ffffff" />
+
+        <RelativeLayout
+            android:id="@+id/event_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/serialNo">
+
+            <RelativeLayout
+                android:id="@+id/event_header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#d8d8d8"
+
+                >
+
+                <TextView
+                    android:id="@+id/event_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:padding="2sp"
+                    android:text="06-01-2018"
+                    android:textAlignment="center"
+                    android:textColor="#000000"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/event_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:padding="2sp"
+                    android:text="EE 320"
+                    android:textColor="#000000"
+                    android:textSize="20sp" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/course_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/event_header"
+                android:padding="2sp"
+                android:text="Digital Signal Processing" />
+
+            <TextView
+                android:id="@+id/event_credits"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_below="@+id/event_header"
+                android:padding="2sp"
+                android:text="3-0-0-6" />
+
+            <TextView
+                android:id="@+id/event_venue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/course_name"
+                android:width="200dp"
+                android:padding="2sp"
+                android:text="2201" />
+
+            <TextView
+                android:id="@+id/event_prof"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_below="@+id/event_credits"
+                android:padding="2sp"
+                android:text="P. Guha" />
+
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+</LinearLayout>

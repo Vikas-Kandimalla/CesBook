@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
         startService(new Intent(this, MyService.class));
 
 
+
         ImageView iv= findViewById(R.id.search_bar);
         iv.setOnClickListener(new View.OnClickListener() {
             @Override

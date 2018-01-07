@@ -7,36 +7,19 @@
 
 
     <TextView
+        android:id="@+id/date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Fri 29-Jul-2017"
-        android:textSize="30sp"
-        android:textColor="#000000"
         android:textAlignment="center"
-        />
+        android:textColor="#000000"
+        android:textSize="30sp" />
 
+    <android.support.v7.widget.RecyclerView
 
-
-    <LinearLayout
+        android:id="@+id/recyclerEventView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/av_main"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/rData"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
-
-        <android.support.v7.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </LinearLayout>
-
-
-
+        android:layout_height="match_parent" />
 
 
 </LinearLayout>

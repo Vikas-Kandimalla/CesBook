@@ -2,32 +2,28 @@ package iitg.cestrum.cbook;
 
 
 
-import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.File;
-import java.io.FileOutputStream;
 
 
 public class MyService extends Service {
 
     public static final String TAG = "serviceTest";
-
+    private boolean sleepFlag = false;
+    private boolean eventsUpdated = false;
     private DBaseHandler dBaseHandler;
-    private String data;
-    private boolean flag = false;
-    public final static String URL = "http://192.168.0.103/appData/appGetEvents.php";
+    private boolean shouldDownloadEvents = true;
+    public final static String eventsURL = "http://10.1.2.74/appData/appGetEvents.php";
+    public final static String updateURL = "http://10.1.2.74/appData/updateData.php";
+
     public MyService() {
     }
 
@@ -53,52 +49,50 @@ public class MyService extends Service {
 
     public class getData extends AsyncTask<Void,Void,Void> {
 
+
+
+
+
         @Override
         protected Void doInBackground(Void... params) {
 
-            if(flag){
-                SystemClock.sleep(5000);
+            Thread.currentThread();
+
+            if(sleepFlag){
+
+                try {
+                    Thread.sleep(20000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
             }
 
             HttpHandler web = new HttpHandler();
-            data = web.getWebPage(URL);
+            String data = web.getWebPage(updateURL);
             while (data == null){
-                SystemClock.sleep(1000);
-                data = web.getWebPage(URL);
+                try {
+                    Thread.sleep(60000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                data = web.getWebPage(updateURL);
                 Log.d(TAG," Received Data :  " + data );
             }
 
             try {
-                JSONObject parentObj = new JSONObject(data);
-
-                JSONObject events = parentObj.getJSONObject("events");
-                int numOfEvents = events.getInt("num");
-                JSONArray eventData = events.getJSONArray("data");
-
-                JSONObject recurEvents = parentObj.getJSONObject("recurEvents");
-                int numOfRecurEvents = recurEvents.getInt("num");
-                JSONArray recurData = recurEvents.getJSONArray("data");
-
-                JSONObject expRecurEvents = parentObj.getJSONObject("expRecurEvents");
-                int numOfERE = expRecurEvents.getInt("num");
-                JSONArray expRecurData = expRecurEvents.getJSONArray("data");
-
-
-                dBaseHandler.resetTables();
-                for(int i = 0; i < numOfEvents; i++)
-                    dBaseHandler.addEvent(new EventBuilder(eventData.getJSONObject(i)));
-
-                for(int i = 0; i < numOfRecurEvents; i++)
-                    dBaseHandler.addRecurEvent(new RecurEventBuilder(recurData.getJSONObject(i)));
-
-                for(int i = 0; i < numOfERE; i++)
-                    dBaseHandler.addExpRecurEvent(new ExpRecurEventBuilder(expRecurData.getJSONObject(i)));
-
-
-                dBaseHandler.populateEventCache(null);
-                Log.d(TAG,"Data written to the database");
-            } catch (JSONException e) {
-                e.printStackTrace();
+                eventUpdateData(data);
+                if(shouldDownloadEvents){
+                    data = web.getWebPage(eventsURL);
+                    while (data == null){
+                        Thread.sleep(60000);
+                        data = web.getWebPage(eventsURL);
+                        Log.d(TAG," Received Data :  " + data );
+                    }
+                    updateDBase(data);
+                    eventsUpdated = true;
+                    Log.d(TAG,"DataBase Updated.");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -111,46 +105,95 @@ public class MyService extends Service {
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
 
+                if(eventsUpdated) {
+                    eventsUpdated = false;
+                    Intent i = new Intent("Database Updated");
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
+                }
 
-            try {
-
-
-
-
-                  /*  Log.d(TAG," Received Data :  " + data );
-                    JSONObject dj = new JSONObject(data);
-                    JSONObject gg = dj.getJSONObject("eventData");
-                    JSONArray eventData = gg.getJSONArray("data");
-                    JSONObject c = eventData.getJSONObject(0);
-                    Log.d(TAG,"ID : " + c.getString("ID") + ", EventDate : " + c.getString("eventDate"));
-                 */
-
-               /* Intent i = new Intent("JSON data");
-                String filename = "eventData";
-                File file = new File(getFilesDir() , filename);
-                i.putExtra("JSONArray",data);
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
-                Log.d(TAG," Broadcast Sent " + file.getAbsolutePath());
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
-                fileOutputStream.write(data.getBytes());
-                fileOutputStream.flush();
-                fileOutputStream.close();
-                Log.d(TAG," File written. Name : data");*/
-
-                Log.d(TAG," If LOOP Applied ");
-                flag = true;
+                Log.d(TAG,"Researching For data");
+                sleepFlag = true;
                 new getData().execute();
 
-            }
-            catch (NullPointerException e){
-                Log.d("serviceTest"," This is not working.");
-                e.printStackTrace();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
         }
+    }
+
+    private void eventUpdateData(String data) throws JSONException, NullPointerException {
+        JSONArray p = new JSONArray(data);
+        JSONObject dat = p.getJSONObject(0);
+
+        String events = dat.getString("events");
+        String recurEvents = dat.getString("recurEvents");
+        String expRecurEvents = dat.getString("expRecurEvents");
+
+        if( (events == null) || (recurEvents == null) || (expRecurEvents == null) )
+                throw new NullPointerException("Received data is INCORRECT");
+
+        SharedPreferences myPref = getApplicationContext().getSharedPreferences("updateData",MODE_PRIVATE);
+        String prefEvents = myPref.getString("uEvents",null);
+        String prefRecurEvents = myPref.getString("uRecurEvents",null);
+        String prefExpRecurEvents = myPref.getString("uExpRecurEvents",null);
+
+        if ( prefEvents != null && prefRecurEvents != null && prefExpRecurEvents != null) {
+
+            if (prefEvents.equalsIgnoreCase(events) &&
+                    prefRecurEvents.equalsIgnoreCase(recurEvents) &&
+                    prefExpRecurEvents.equalsIgnoreCase(expRecurEvents)) {
+
+                this.shouldDownloadEvents = false;
+                Log.d(TAG, "Update Data is up to date");
+                return;
+
+            }
+        }
+
+
+
+        this.shouldDownloadEvents = true;
+        SharedPreferences.Editor editor = myPref.edit();
+        editor.putString("uEvents" , events);
+        editor.putString("uRecurEvents", recurEvents);
+        editor.putString("uExpRecurEvents",expRecurEvents);
+        editor.apply();
+
+
+
+        Log.d(TAG,"eventUpdateData = " + myPref.getString("uEvents",null));
+        Log.d(TAG,"recurUpdateData = " + myPref.getString("uRecurEvents",null));
+        Log.d(TAG,"expRecuUpdateData = " + myPref.getString("uExpRecurEvents",null));
+    }
+
+    private void updateDBase(String data) throws Exception {
+
+        JSONObject parentObj = new JSONObject(data);
+
+        JSONObject events = parentObj.getJSONObject("events");
+        int numOfEvents = events.getInt("num");
+        JSONArray eventData = events.getJSONArray("data");
+
+        JSONObject recurEvents = parentObj.getJSONObject("recurEvents");
+        int numOfRecurEvents = recurEvents.getInt("num");
+        JSONArray recurData = recurEvents.getJSONArray("data");
+
+        JSONObject expRecurEvents = parentObj.getJSONObject("expRecurEvents");
+        int numOfERE = expRecurEvents.getInt("num");
+        JSONArray expRecurData = expRecurEvents.getJSONArray("data");
+
+
+        dBaseHandler.resetTables();
+        for(int i = 0; i < numOfEvents; i++)
+            dBaseHandler.addEvent(new EventBuilder(eventData.getJSONObject(i)));
+
+        for(int i = 0; i < numOfRecurEvents; i++)
+            dBaseHandler.addRecurEvent(new RecurEventBuilder(recurData.getJSONObject(i)));
+
+        for(int i = 0; i < numOfERE; i++)
+            dBaseHandler.addExpRecurEvent(new ExpRecurEventBuilder(expRecurData.getJSONObject(i)));
+
+
+        dBaseHandler.populateEventCache(null);
+        dBaseHandler.populateEventCache(null,true);
+        Log.d(TAG,"Data written to the database");
+
     }
 }

@@ -6,7 +6,9 @@ import android.database.Cursor;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import static java.lang.Integer.parseInt;
 
@@ -27,9 +29,10 @@ public class EventCacheBuilder extends Event {
     public String courseName;
     public String prof;
     public String credits;
+    public int serialNo=-1;
 
     public int parentID,parentRecurType,parentRecurLength;
-    public String parentRecurData;
+    public String parentRecurData,modifiedDate;
     public int isModified;
 
     // Parent properties if the event if a recur event Properties
@@ -42,6 +45,28 @@ public class EventCacheBuilder extends Event {
     public EventCacheBuilder(){
         super(Event.EVENT_CACHE_BUILDER);
     }
+
+    public EventCacheBuilder(Cursor c,int serial){
+        super(Event.EVENT_CACHE_BUILDER);
+        this.ID = c.getString(0);
+        this.eventName = c.getString(1);
+        this.eventDate = c.getString(2);
+        this.eventTime = c.getString(3);
+        this.eventDuration =  c.getInt(4);
+        this.eventVenue = c.getString(5);
+        this.courseName = c.getString(6);
+        this.prof = c.getString(7);
+        this.credits = c.getString(8);
+
+        this.parentID = -1;
+        this.parentRecurType = -1;
+        this.parentRecurLength = -1;
+        this.parentRecurData = null;
+        this.isModified = 0;
+
+        this.serialNo = serial;
+    }
+
 
     public EventCacheBuilder(Cursor c){
 
@@ -57,7 +82,7 @@ public class EventCacheBuilder extends Event {
                 "`credits` VARCHAR(50) DEFAULT NULL" +
         */
 
-        super(Event.EVENT_BUILDER);
+        super(Event.EVENT_CACHE_BUILDER);
         this.ID = c.getString(0);
         this.eventName = c.getString(1);
         this.eventDate = c.getString(2);
@@ -114,11 +139,12 @@ public class EventCacheBuilder extends Event {
         this.parentRecurLength = r.recurLength;
         this.parentRecurData = r.recurData;
         this.isModified = 1;
+        this.modifiedDate = date;
     }
 
 
     public EventCacheBuilder(String id, String nam, String date, String time, String duration, String venue, String courName, String prof, String credit) throws ParseException {
-        super(Event.EVENT_BUILDER);
+        super(Event.EVENT_CACHE_BUILDER);
         this.ID = (id);
         this.eventName = nam;
         this.prof = prof;
@@ -136,7 +162,14 @@ public class EventCacheBuilder extends Event {
     }
 
     public Time getTime() throws ParseException {
-        return new Time(new SimpleDateFormat("HH:mm:ss").parse(this.eventTime).getTime());
+        return new Time(new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH).parse(this.eventTime).getTime());
+    }
+
+    public Calendar getCalendarTime() throws ParseException {
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd::HH:mm:ss", Locale.ENGLISH);
+        Calendar c = Calendar.getInstance();
+        c.setTime(f.parse(this.eventDate+"::"+this.eventTime));
+        return c;
     }
 
     public ContentValues getContentValues() {

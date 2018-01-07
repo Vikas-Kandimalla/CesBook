@@ -8,7 +8,7 @@ public class AvEvent {
 
     public int id;
     public int head;
-    public int course;
+    public int name;
     public int time;
     public int body;
     public int venue;
