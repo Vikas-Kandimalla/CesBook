@@ -29,7 +29,7 @@ public class EventCacheBuilder extends Event {
     public String courseName;
     public String prof;
     public String credits;
-    public int serialNo=-1;
+    public int serialNo=0;
 
     public int parentID,parentRecurType,parentRecurLength;
     public String parentRecurData,modifiedDate;
@@ -168,7 +168,7 @@ public class EventCacheBuilder extends Event {
     public Calendar getCalendarTime() throws ParseException {
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd::HH:mm:ss", Locale.ENGLISH);
         Calendar c = Calendar.getInstance();
-        c.setTime(f.parse(this.eventDate+"::"+this.eventTime));
+        c.setTime(f.parse(this.eventDate + "::" + this.eventTime));
         return c;
     }
 

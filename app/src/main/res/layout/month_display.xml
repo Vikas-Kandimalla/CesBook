@@ -9,12 +9,12 @@
         android:layout_height="wrap_content"
         >
 
-        <ImageView
+        <TextView
             android:id="@+id/month_image"
             android:layout_width="wrap_content"
             android:layout_height="180sp"
             android:scaleType="centerCrop"
-            app:srcCompat="@drawable/january" />
+            />
 
         <TextView
             android:id="@+id/month_name"

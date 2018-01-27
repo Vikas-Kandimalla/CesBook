@@ -1,6 +1,8 @@
 package iitg.cestrum.cbook;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Objects;
 
 
 /**
@@ -24,6 +27,7 @@ public class agendaViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public static final int EVENT = 1;
     public static final int MONTH = 2;
     public static final int DATE = 3;
+    public static final int WEEK = 4;
     private static final String TAG = "ViewTests" ;
 
     private Context myContext;
@@ -51,12 +55,10 @@ public class agendaViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             case EVENT:
                 View agendaView = inflater.inflate(R.layout.agenda_event_view,parent,false);
                 viewHolder =  new EventViewHolder(agendaView);
-
                 break;
 
             case MONTH:
                 View monthView = inflater.inflate(R.layout.month_display,parent,false);
-
                 viewHolder = new MonthViewHolder(monthView);
 
                 break;
@@ -66,9 +68,13 @@ public class agendaViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 viewHolder = new DateViewHolder(dateView);
                 break;
 
+            case WEEK:
+                View weekView = inflater.inflate(R.layout.week_display,parent,false);
+                viewHolder = new WeekViewHolder(weekView);
+                break;
             default:
-                View view = inflater.inflate(R.layout.date_display,parent,false);
-                viewHolder = new DateViewHolder(view);
+                View dateDef = inflater.inflate(R.layout.date_display,parent,false);
+                viewHolder = new DateViewHolder(dateDef);
                 break;
 
         }
@@ -79,17 +85,34 @@ public class agendaViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-
-
-
         switch(viewHolder.getItemViewType()){
             case EVENT:
 
                 //
+
                 EventCacheBuilder ecb = (EventCacheBuilder) myEvents.get(position);
                 EventViewHolder holder = (EventViewHolder) viewHolder;
+                ViewCompat.setElevation(holder.eventContainer,10);
+                ViewCompat.setTranslationZ(holder.eventContainer,10);
                 String a = String.valueOf(ecb.serialNo);
                 holder.serialNo.setText(a);
+                switch (ecb.eventName){
+                    case "EE 102":
+                        holder.serialNo.setBackgroundColor(Color.parseColor("#e60000"));
+                        holder.eventHeader.setBackgroundColor(Color.parseColor("#ff9999"));
+                        break;
+                    case "EE 350":
+                        holder.serialNo.setBackgroundColor(Color.parseColor("#004080"));
+                        holder.eventHeader.setBackgroundColor(Color.parseColor("#99ccff"));
+                        break;
+
+                    default:
+                        holder.serialNo.setBackgroundColor(Color.parseColor("#3d3d3d"));
+                        holder.eventHeader.setBackgroundColor(Color.parseColor("#d8d8d8"));
+                        break;
+                }
+
+
                 String time = null;
                 SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
                 try {
@@ -126,6 +149,12 @@ public class agendaViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 dateHolder.dateName.setText(e.getDate_name());
                 break;
 
+            case WEEK:
+                Event w  = (Event) myEvents.get(position);
+                WeekViewHolder weekHolder = (WeekViewHolder) viewHolder;
+                weekHolder.weekName.setText(w.getWeek_name());
+                break;
+
             default:
                     Log.d(TAG,"SomeThings Wrong.");
                     break;
@@ -156,7 +185,13 @@ public class agendaViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
          //   Log.d(TAG,"Replied with date");
             return DATE;
         }
-        else
+        else if(myEvents.get(position).getType() == Event.WEEK_DISPLAY){
+            //   Log.d(TAG,"Replied with date");
+            return WEEK;
+        }
+
             return -1;
     }
+
+
 }

@@ -1,5 +1,6 @@
 package iitg.cestrum.cbook;
 
+import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
@@ -11,7 +12,7 @@ import android.widget.TextView;
 
 public class MonthViewHolder extends RecyclerView.ViewHolder {
 
-    public ImageView monthImage;
+    public TextView monthImage;
     public TextView monthName;
 
     public MonthViewHolder(View itemView) {

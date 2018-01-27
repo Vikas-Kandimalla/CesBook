@@ -20,13 +20,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Main2Activity" />
-        <activity android:name=".AgendaView" />
+        <activity
+            android:name=".Main2Activity"
+            android:parentActivityName=".MainActivity" />
 
+        <meta-data
+            android:name="android.support.VERSION"
+            android:value="26.0.0-beta1" />
         <service
             android:name=".MyService"
             android:enabled="true"
-            android:exported="true"  />
+            android:exported="true" />
+
+        <activity
+            android:name=".AgendaViewEndless"
+            android:label="@string/title_activity_temp"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".AgendaViewDayVise"
+            android:label="@string/title_activity_agenda_view_day_vise"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

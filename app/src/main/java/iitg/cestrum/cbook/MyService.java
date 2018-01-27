@@ -191,8 +191,9 @@ public class MyService extends Service {
             dBaseHandler.addExpRecurEvent(new ExpRecurEventBuilder(expRecurData.getJSONObject(i)));
 
 
-        dBaseHandler.populateEventCache(null);
-        dBaseHandler.populateEventCache(null,true);
+        //dBaseHandler.populateEventCache(null);
+
+        dBaseHandler.close();
         Log.d(TAG,"Data written to the database");
 
     }

@@ -83,19 +83,16 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="16dp">
-
-        <Button
-            android:id="@+id/time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Timetable" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Home"
-            android:layout_weight="1"
-            android:id="@+id/home" />
     </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/dayWise"
+        android:text = "day wise"/>
+    <Button
+        android:id="@+id/tte"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Endless Scroll" />
 </LinearLayout>

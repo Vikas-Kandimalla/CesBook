@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/week_name"
+        android:layout_width="wrap_content"
+        android:layout_height="50sp"
+        android:layout_marginStart="30sp"
+        android:layout_weight="1"
+        android:fontFamily="sans-serif"
+        android:padding="10sp"
+        android:paddingTop="0sp"
+        android:text="Week 00, 00 Jan - 00 Jan"
+        android:textAlignment="viewStart"
+        android:textSize="15sp" />
+</LinearLayout>
