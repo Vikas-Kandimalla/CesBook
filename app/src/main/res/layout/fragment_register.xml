@@ -1,0 +1,94 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/register_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1.5"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title"
+                android:layout_gravity="center"
+
+                android:textSize="35sp" />
+
+
+        </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginTop="30sp"
+        android:layout_marginStart="10sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+   <EditText
+       android:id="@+id/register_firstName"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:ems = "8"
+       android:hint="First Name"/>
+
+        <EditText
+            android:id="@+id/register_lastName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:ems = "8"
+            android:hint="Last Name"/>
+
+    </LinearLayout>
+
+        <EditText
+            android:id="@+id/register_rollNo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems = "16"
+            android:layout_marginTop="30sp"
+            android:layout_gravity="center"
+            android:hint="Roll Number"/>
+
+        <EditText
+            android:id="@+id/register_semester"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems = "16"
+            android:layout_marginTop="30sp"
+            android:layout_gravity="center"
+            android:hint="Semester"/>
+
+        <EditText
+            android:id="@+id/register_branch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems = "16"
+            android:layout_marginTop="30sp"
+            android:layout_gravity="center"
+            android:hint="Branch"/>
+
+
+
+        <Button
+            android:id="@+id/register_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="50sp"
+            android:text="Submit"
+
+            />
+    </LinearLayout>
+
+</LinearLayout>

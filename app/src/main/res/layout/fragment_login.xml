@@ -1,0 +1,102 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/grey_100"
+    android:orientation="vertical"
+    android:weightSum="4">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.5"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title"
+            android:layout_gravity="center"
+
+            android:textSize="35sp" />
+
+
+    </LinearLayout>
+
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2.5"
+        android:background="@color/grey_100"
+        >
+
+        <LinearLayout
+            android:id="@+id/email_password_fields"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp">
+
+            <EditText
+                android:id="@+id/field_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="10sp"
+                android:layout_marginBottom="10sp"
+                android:ems = "15"
+                android:layout_weight="1"
+                android:hint="@string/hint_email"
+                android:inputType="textEmailAddress" />
+
+            <EditText
+                android:id="@+id/field_password"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="10sp"
+                android:layout_marginBottom="10sp"
+                android:ems = "15"
+                android:layout_weight="1"
+                android:hint="@string/hint_password"
+                android:inputType="textPassword" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/email_password_buttons"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/email_password_fields"
+            android:orientation="vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp">
+
+            <Button
+                android:id="@+id/email_sign_in_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/sign_in"
+                android:layout_marginTop="10sp"
+                android:layout_gravity="center"
+                android:theme="@style/ThemeOverlay.MyDarkButton" />
+
+            <TextView
+                android:id="@+id/email_create_account_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20sp"
+                android:layout_weight="1"
+                android:text="@string/create_account"
+                android:textStyle="italic" />
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+</LinearLayout>

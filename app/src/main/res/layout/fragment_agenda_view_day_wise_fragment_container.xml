@@ -1,0 +1,33 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="iitg.cestrum.cambook.AgendaViewDayWiseFragmentContainer">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/agenda_view_day_wise_fragment_container"
+        android:orientation="vertical">
+
+
+
+
+
+        <android.support.v4.view.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/agenda_day_wise_view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+
+
+
+
+        </android.support.v4.view.ViewPager>
+
+
+
+
+    </LinearLayout>
+
+</FrameLayout>

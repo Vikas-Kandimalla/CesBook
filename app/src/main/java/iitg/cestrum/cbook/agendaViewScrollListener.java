@@ -1,8 +1,5 @@
 package iitg.cestrum.cbook;
 
-import android.app.Activity;
-import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,7 +8,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import static iitg.cestrum.cbook.MainActivity.TAG;
+import static iitg.cestrum.cbook.AgendaViewEndlessFragment.TAG;
 
 /**
  * Created by vikas on 07-01-2018.
@@ -21,18 +18,15 @@ public class agendaViewScrollListener extends RecyclerView.OnScrollListener {
 
     private agendaViewAdapter adapter;
     private RecyclerView recyclerView;
-    private Context context;
-    private EventsUpdateHandler updateHandler;
-    private Activity activity;
-    public static Calendar currentDate = Calendar.getInstance();
+    private EventsEndlessUpdateHandler updateHandler;
+    private AgendaViewEndlessFragment fragment;
+    static Calendar currentDate = Calendar.getInstance();
 
-    public agendaViewScrollListener(Context context, RecyclerView recyclerView, agendaViewAdapter adapter, Activity activity){
-        this.context = context;
+    agendaViewScrollListener(DBaseHandler handler, RecyclerView recyclerView, agendaViewAdapter adapter, AgendaViewEndlessFragment fragment ){
         this.adapter = adapter;
         this.recyclerView = recyclerView;
-        this.activity = activity;
-        updateHandler = new EventsUpdateHandler(this.context,this.recyclerView);
-
+        this.fragment = fragment;
+        updateHandler = new EventsEndlessUpdateHandler(handler,this.recyclerView);
 
     }
 
@@ -53,7 +47,7 @@ public class agendaViewScrollListener extends RecyclerView.OnScrollListener {
 
 
 
-        if( ! ((AgendaViewEndless)activity).isCalenderVisible && ! ((AgendaViewEndless)activity).setToTodayClicked) {
+        if( ! fragment.isCalenderVisible && ! fragment.setToTodayClicked) {
             ArrayList<Event> events = updateHandler.getEvents();
             Event e = events.get(firstVisibleItem);
             String date;
@@ -84,8 +78,7 @@ public class agendaViewScrollListener extends RecyclerView.OnScrollListener {
                     Calendar cc = DBaseHandler.stringToCalender(date);
                     currentDate = cc;
                     String title = DBaseHandler.mon[cc.get(Calendar.MONTH)] + " " + cc.get(Calendar.YEAR);
-                    if (((AppCompatActivity) activity).getSupportActionBar() != null)
-                        ((AppCompatActivity) activity).getSupportActionBar().setTitle(title);
+                        fragment.actionBar.setTitle(title);
                  //   MaterialCalendarView mcw = (MaterialCalendarView) activity.findViewById(R.id.agenda_view_calendar);
                  //   mcw.setCurrentDate(CalendarDay.from(cc));
                 } catch (ParseException e1) {
@@ -97,7 +90,7 @@ public class agendaViewScrollListener extends RecyclerView.OnScrollListener {
         }
 
         int lastVisibleItem  = mLinearLayoutManager.findLastVisibleItemPosition();
-        if(EventsUpdateHandler.dataLoaded){
+        if(EventsEndlessUpdateHandler.dataLoaded){
 
             if(lastVisibleItem >= totalItemCount - threshold && !recyclerView.isComputingLayout()){
                 updateHandler.loadNext(adapter);

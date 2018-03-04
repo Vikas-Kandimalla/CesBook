@@ -9,6 +9,13 @@ import java.util.Calendar;
 public class EventsDayWiseUpdateHandler {
 
     private static Calendar nowDate = Calendar.getInstance();
+    static int prePage = 6,loopCount = 0;
+
+    EventsDayWiseUpdateHandler() {
+        nowDate = Calendar.getInstance();
+        prePage = 6; loopCount = 0;
+        nowDate.add(Calendar.DATE,-6);
+    }
 
     public Calendar getCurrentDate() {
         return nowDate;
@@ -18,11 +25,11 @@ public class EventsDayWiseUpdateHandler {
         nowDate.add(Calendar.DATE,offset);
     }
 
-    public void setCurrentDate(Calendar c){
+    void setCurrentDate(Calendar c){
         nowDate = c;
     }
 
-    public Calendar getDate(int offset){
+    Calendar getDate(int offset){
         Calendar temp = (Calendar) nowDate.clone();
         temp.add(Calendar.DATE,offset);
         return temp;

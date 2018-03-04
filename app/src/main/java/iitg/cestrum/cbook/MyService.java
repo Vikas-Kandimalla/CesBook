@@ -1,7 +1,6 @@
 package iitg.cestrum.cbook;
 
 
-
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,11 +19,14 @@ public class MyService extends Service {
     public static final String TAG = "serviceTest";
     private boolean sleepFlag = false;
     private boolean eventsUpdated = false;
+    private static boolean mShouldContinue = false;
     private DBaseHandler dBaseHandler;
     private boolean shouldDownloadEvents = true;
-    public final static String eventsURL = "http://10.1.2.74/appData/appGetEvents.php";
-    public final static String updateURL = "http://10.1.2.74/appData/updateData.php";
-
+    private boolean shouldDownloadNotifications = false;
+    public final static String address = "http://10.1.2.74/";
+    public final static String eventsURL =  address + "appData/appGetEvents.php";
+    public final static String updateURL =  address + "appData/updateData.php";
+    public final static String notificationsURL = address + "appData/notificationsData.php";
     public MyService() {
     }
 
@@ -33,17 +36,21 @@ public class MyService extends Service {
         return null;
     }
 
+
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand started and running : ");
         dBaseHandler = new DBaseHandler(getApplicationContext());
-        new getData().execute();
+        mShouldContinue = true;
+        //new getData().execute();
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mShouldContinue = false;
     }
 
 
@@ -82,6 +89,16 @@ public class MyService extends Service {
 
             try {
                 eventUpdateData(data);
+                if(shouldDownloadNotifications){
+                    String notifs = web.getWebPage(notificationsURL);
+                    while (notifs == null){
+                        Thread.sleep(60000);
+                        notifs = web.getWebPage(notificationsURL);
+                        Log.d(TAG,"Received notifications data = " + notifs);
+                    }
+                    updateNotificationsDatabase(notifs);
+                    Log.d(TAG," Database updated");
+                }
                 if(shouldDownloadEvents){
                     data = web.getWebPage(eventsURL);
                     while (data == null){
@@ -113,7 +130,8 @@ public class MyService extends Service {
 
                 Log.d(TAG,"Researching For data");
                 sleepFlag = true;
-                new getData().execute();
+                if (mShouldContinue)
+                    new getData().execute();
 
         }
     }
@@ -125,6 +143,7 @@ public class MyService extends Service {
         String events = dat.getString("events");
         String recurEvents = dat.getString("recurEvents");
         String expRecurEvents = dat.getString("expRecurEvents");
+        String notifications = dat.getString("notifications");
 
         if( (events == null) || (recurEvents == null) || (expRecurEvents == null) )
                 throw new NullPointerException("Received data is INCORRECT");
@@ -133,6 +152,8 @@ public class MyService extends Service {
         String prefEvents = myPref.getString("uEvents",null);
         String prefRecurEvents = myPref.getString("uRecurEvents",null);
         String prefExpRecurEvents = myPref.getString("uExpRecurEvents",null);
+        String prefNotifications = myPref.getString("uNotifications",null);
+
 
         if ( prefEvents != null && prefRecurEvents != null && prefExpRecurEvents != null) {
 
@@ -142,28 +163,42 @@ public class MyService extends Service {
 
                 this.shouldDownloadEvents = false;
                 Log.d(TAG, "Update Data is up to date");
-                return;
+
 
             }
         }
+        else {
+
+            this.shouldDownloadEvents = true;
+            SharedPreferences.Editor editor = myPref.edit();
+            editor.putString("uEvents", events);
+            editor.putString("uRecurEvents", recurEvents);
+            editor.putString("uExpRecurEvents", expRecurEvents);
+            editor.apply();
 
 
+            Log.d(TAG, "eventUpdateData = " + myPref.getString("uEvents", null));
+            Log.d(TAG, "recurUpdateData = " + myPref.getString("uRecurEvents", null));
+            Log.d(TAG, "expRecuUpdateData = " + myPref.getString("uExpRecurEvents", null));
+        }
 
-        this.shouldDownloadEvents = true;
-        SharedPreferences.Editor editor = myPref.edit();
-        editor.putString("uEvents" , events);
-        editor.putString("uRecurEvents", recurEvents);
-        editor.putString("uExpRecurEvents",expRecurEvents);
-        editor.apply();
+        if (prefNotifications != null){
+            if(prefNotifications.equalsIgnoreCase(notifications)){
+                this.shouldDownloadNotifications = false;
+                Log.d(TAG,"Notifications data is up to date");
+            }
+        }
+        else{
+            this.shouldDownloadNotifications = true;
+            SharedPreferences.Editor edito = myPref.edit();
+            edito.putString("uNotifications",notifications);
+            edito.apply();
 
-
-
-        Log.d(TAG,"eventUpdateData = " + myPref.getString("uEvents",null));
-        Log.d(TAG,"recurUpdateData = " + myPref.getString("uRecurEvents",null));
-        Log.d(TAG,"expRecuUpdateData = " + myPref.getString("uExpRecurEvents",null));
+            Log.d(TAG, "NotificationData = " + myPref.getString("uNotifications",null));
+        }
     }
 
-    private void updateDBase(String data) throws Exception {
+    private synchronized void updateDBase(String data) throws Exception {
 
         JSONObject parentObj = new JSONObject(data);
 
@@ -196,5 +231,18 @@ public class MyService extends Service {
         dBaseHandler.close();
         Log.d(TAG,"Data written to the database");
 
+    }
+
+    private synchronized  void updateNotificationsDatabase(String data) throws JSONException {
+        NotificationDatabaseHandler handler = new NotificationDatabaseHandler(getApplicationContext());
+        JSONObject parent = new JSONObject(data);
+        int num = parent.getInt("num");
+        JSONArray notifications = parent.getJSONArray("data");
+        handler.resetTable();
+        for(int i = 0; i < num; i++){
+            handler.insertRow(new NotificationBuilder(notifications.getJSONObject(i)));
+        }
+        handler.close();
+        Log.d(TAG,"Notification Data written to the database");
     }
 }

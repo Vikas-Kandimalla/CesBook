@@ -34,7 +34,7 @@ public class RecurEventBuilder extends Event {
 
     private ContentValues contentValues;
 
-    public RecurEventBuilder(String id, String nam, String sDate, String sTime, String duration, String eDate, String rType, String rLength, String rData, String venue, String courName, String prof, String credit) throws ParseException {
+    public RecurEventBuilder(String id, String nam, String sDate, String sTime, int duration, String eDate, int rType, int rLength, String rData, String venue, String courName, String prof, String credit) {
         super(Event.RECUR_EVENT_BUILDER);
         this.ID = parseInt(id);
         this.eventName = nam;
@@ -42,9 +42,9 @@ public class RecurEventBuilder extends Event {
         this.credits = credit;
         this.courseName = courName;
         this.eventVenue = venue;
-        this.eventDuration = parseInt(duration);
-        this.recurType = parseInt(rType);
-        this.recurLength = parseInt(rLength);
+        this.eventDuration = duration;
+        this.recurType = rType;
+        this.recurLength = (rLength);
         this.recurData = rData;
         this.eventDate =    sDate;                                                  //new SimpleDateFormat("yyyy-MM-dd").parse(sDate);
         this.eventTime =    sTime;                                                   //new Time(new SimpleDateFormat("HH:mm:ss").parse(sTime).getTime());

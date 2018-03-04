@@ -3,14 +3,18 @@ package iitg.cestrum.cbook;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+
 import static java.lang.Integer.parseInt;
 
 /**
@@ -19,7 +23,7 @@ import static java.lang.Integer.parseInt;
 
 public class EventBuilder extends  Event{
 
-    public int ID;
+    public String ID;
     public String eventName;
     public String eventDate;
     public String eventTime;
@@ -50,7 +54,7 @@ public class EventBuilder extends  Event{
         */
 
         super(Event.EVENT_BUILDER);
-        this.ID = c.getInt(0);
+        this.ID = c.getString(0);
         this.eventName = c.getString(1);
         this.eventDate = c.getString(2);
         this.eventTime = c.getString(3);
@@ -66,15 +70,15 @@ public class EventBuilder extends  Event{
         super(Event.EVENT_BUILDER);
     }
 
-    public EventBuilder(String id, String nam, String date, String time, String duration, String venue, String courName, String prof, String credit) throws ParseException {
+    public EventBuilder(String id, String nam, String date, String time, int duration, String venue, String courName, String prof, String credit) {
         super(Event.EVENT_BUILDER);
-        this.ID = parseInt(id);
+        this.ID =  (id);
         this.eventName = nam;
         this.prof = prof;
         this.credits = credit;
         this.courseName = courName;
         this.eventVenue = venue;
-        this.eventDuration = parseInt(duration);
+        this.eventDuration = (duration);
         this.eventDate = date;                                                      // new SimpleDateFormat("yyyy-MM-dd").parse(date);
         this.eventTime = time;                                                      //new Time(new SimpleDateFormat("HH:mm:ss").parse(time).getTime());
 
@@ -82,7 +86,7 @@ public class EventBuilder extends  Event{
 
     public EventBuilder(JSONObject j) throws JSONException {
         super(Event.EVENT_BUILDER);
-        this.ID = j.getInt("ID");
+        this.ID = j.getString("ID");
         this.eventName = j.getString("name");
         this.eventDate = j.getString("eventDate");
         this.eventTime = j.getString("eventTime");
@@ -93,8 +97,25 @@ public class EventBuilder extends  Event{
         this.credits = j.getString("credits");
     }
 
+    public EventBuilder(DocumentSnapshot doc){
+        super(Event.EVENT_BUILDER);
+        this.ID = doc.getId();
+        Map<String, Object> data = doc.getData();
+        this.eventName = (String) data.get("eventName");
+        this.eventDate = (String) data.get("eventDate");
+        this.eventTime = (String) data.get("eventTime");
+        this.eventDuration =  parseInt((String) data.get("eventDuration"));
+
+        this.eventVenue = (String) data.get("eventVenue");
+        this.courseName = (String) data.get("courseName");
+        this.prof = (String) data.get("prof");
+        this.credits = (String) data.get("credits");
+
+
+    }
+
     public Date getDate() throws ParseException {
-        return new SimpleDateFormat("yyyy-MM-dd").parse(this.eventDate);
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(this.eventDate);
     }
 
     public Time getTime() throws ParseException {
@@ -119,7 +140,7 @@ public class EventBuilder extends  Event{
 
     public void setEventData(Cursor c){
 
-        this.ID = c.getInt(0);
+        this.ID = c.getString(0);
         this.eventName = c.getString(1);
         this.eventDate = c.getString(2);
         this.eventTime = c.getString(3);

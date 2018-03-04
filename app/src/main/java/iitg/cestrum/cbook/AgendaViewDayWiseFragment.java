@@ -1,11 +1,15 @@
 package iitg.cestrum.cbook;
 
 import android.app.DatePickerDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -13,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -26,16 +29,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import static iitg.cestrum.cbook.MainActivity.TAG;
+import static iitg.cestrum.cbook.AgendaViewDayWiseFragmentContainer.TAG;
 
-/**
- * A simple .
- * Activities that contain this fragment must implement the
- *
- * to handle interaction events.
- * Use the  factory method to
- * create an instance of this fragment.
- */
 public class AgendaViewDayWiseFragment extends Fragment {
 
     private Calendar date;
@@ -43,6 +38,7 @@ public class AgendaViewDayWiseFragment extends Fragment {
     private DBaseHandler dBaseHandler;
     public ListView listView;
     private MyAdapter adapter;
+    private BroadcastReceiver receiver;
 
     public AgendaViewDayWiseFragment() {
         // Required empty public constructor
@@ -51,23 +47,12 @@ public class AgendaViewDayWiseFragment extends Fragment {
     public static AgendaViewDayWiseFragment create(int position,Calendar date){
 
         AgendaViewDayWiseFragment fragment = new AgendaViewDayWiseFragment();
-
         Bundle args = new Bundle();
         args.putLong("Date", date.getTimeInMillis());
         args.putInt("position",position);
         fragment.setArguments(args);
         return fragment;
     }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     *
-     * A new instance of fragment AgendaViewDayWiseFragment.
-     */
-
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,7 +62,9 @@ public class AgendaViewDayWiseFragment extends Fragment {
             date.setTimeInMillis(getArguments().getLong("Date"));
             position = getArguments().getInt("position");
         }
-        dBaseHandler = new DBaseHandler(getContext());
+        dBaseHandler = ((MainActivity)getActivity()).dBaseHandler;
+
+
     }
 
     @Override
@@ -86,11 +73,13 @@ public class AgendaViewDayWiseFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_agenda_view_day_wise,container,false);
         TextView textView = rootView.findViewById(R.id.daywiseView);
         SimpleDateFormat dt = new SimpleDateFormat("EEE dd-MMM-yyyy", Locale.ENGLISH);
+
         String temp = dt.format(date.getTime());
+
         textView.setText(temp);
         listView = (ListView) rootView.findViewById(R.id.agenda_view_day_wise_list_view);
         final ViewPager pager = getActivity().findViewById(R.id.agenda_day_wise_view_pager);
-        final PagerAdapter pagerAdapter = ((AgendaViewDayVise) getActivity()).pagerAdapter;
+        final PagerAdapter pagerAdapter = AgendaViewDayWiseFragmentContainer.pagerAdapter;
         final DatePickerDialog dialog = new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
@@ -109,8 +98,8 @@ public class AgendaViewDayWiseFragment extends Fragment {
                 c.add(Calendar.DATE,-1 * position);
                 handler.setCurrentDate(c);
 
-                ((AgendaViewDayVise) getActivity()).loopCount = 0;
-                ((AgendaViewDayVise) getActivity()).prePage = position;
+                EventsDayWiseUpdateHandler.loopCount = 0;
+                EventsDayWiseUpdateHandler.prePage = position;
                 pager.setCurrentItem(position);
                 pagerAdapter.finishUpdate(pager);
 
@@ -155,6 +144,30 @@ public class AgendaViewDayWiseFragment extends Fragment {
         return rootView;
     }
 
+    @Override
+    public void onViewCreated(View view,Bundle SavedInstance){
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(TAG,"On Receive called");
+                try {
+                    EventCacheBuilder[] eb = dBaseHandler.getEventsForDate(date);
+                    if(eb != null){
+                        //adapter = new MyAdapter(getContext(),R.id.agenda_view_day_wise_list_view, eb);
+                        adapter.resetEvents(eb);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+        };
+
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,new IntentFilter("EVENTS_UPDATED"));
+        Log.d(TAG,"Receiver created " + "on Date " + DBaseHandler.calendarToString(date));
+
+    }
+
 
 
     public Calendar getFragmentDate(){
@@ -162,7 +175,7 @@ public class AgendaViewDayWiseFragment extends Fragment {
     }
 
     private View getAgendaView(LayoutInflater inflater,ViewGroup container,EventCacheBuilder ecb,int serial){
-        View itemView = inflater.inflate(R.layout.agenda_event_view,container,false);
+        View itemView = inflater.inflate(R.layout.display_agenda_event,container,false);
         TextView serialNo,eventTime,eventName,courseName,prof,credits,venue;
         RelativeLayout eventHeader;
         LinearLayout eventContainer;
@@ -226,9 +239,27 @@ public class AgendaViewDayWiseFragment extends Fragment {
     }
 
     @Override
+    public void onResume(){
+        super.onResume();
+    }
+
+    @Override
+    public void onPause(){
+
+        super.onPause();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
-        dBaseHandler.close();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
+        Log.d(TAG,"Receiver Destroyed for date " + DBaseHandler.calendarToString(date) );
+
     }
 
     public class MyAdapter extends ArrayAdapter {
@@ -236,7 +267,7 @@ public class AgendaViewDayWiseFragment extends Fragment {
         private Context context;
         private EventCacheBuilder[] obj;
 
-        public MyAdapter(@NonNull Context context, int resource, EventCacheBuilder[] objects) {
+         MyAdapter(@NonNull Context context, int resource, EventCacheBuilder[] objects) {
             super(context, resource, objects);
             this.context = context;
             this.obj = objects;
@@ -244,7 +275,7 @@ public class AgendaViewDayWiseFragment extends Fragment {
         }
 
         @Override
-        public View getView(int position,View convertView, ViewGroup parent){
+        public View getView(int position,View convertView,@NonNull ViewGroup parent){
 
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             return getAgendaView(inflater,parent,obj[position],position + 1);
@@ -255,7 +286,15 @@ public class AgendaViewDayWiseFragment extends Fragment {
         public int getCount(){
             return obj.length;
         }
+
+        public void resetEvents(EventCacheBuilder[] b) {
+            obj = b;
+            this.notifyDataSetChanged();
+        }
     }
+
+
+
 
     /**
      * This interface must be implemented by activities that contain this

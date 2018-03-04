@@ -10,6 +10,7 @@ import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import static java.lang.Integer.parseInt;
 
@@ -101,15 +102,15 @@ public class ExpRecurEventBuilder extends Event {
     }
 
     public Date getEventPrevDate() throws ParseException {
-        return new SimpleDateFormat("yyyy-MM-dd").parse(this.eventPrevDate);
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(this.eventPrevDate);
     }
 
     public Date getEventNewDate() throws ParseException {
-        return new SimpleDateFormat("yyyy-MM-dd").parse(this.eventNewDate);
+        return new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH).parse(this.eventNewDate);
     }
 
     public Time getEventTime() throws ParseException {
-        return new Time(new SimpleDateFormat("HH:mm:ss").parse(this.eventTime).getTime());
+        return new Time(new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH).parse(this.eventTime).getTime());
     }
 
     public boolean isDeleted() {

@@ -14,7 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Objects;
 
 
 /**
@@ -53,27 +52,27 @@ public class agendaViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         LayoutInflater inflater = LayoutInflater.from(getContext());
         switch(viewType){
             case EVENT:
-                View agendaView = inflater.inflate(R.layout.agenda_event_view,parent,false);
+                View agendaView = inflater.inflate(R.layout.display_agenda_event,parent,false);
                 viewHolder =  new EventViewHolder(agendaView);
                 break;
 
             case MONTH:
-                View monthView = inflater.inflate(R.layout.month_display,parent,false);
+                View monthView = inflater.inflate(R.layout.display_month,parent,false);
                 viewHolder = new MonthViewHolder(monthView);
 
                 break;
 
             case DATE:
-                View dateView = inflater.inflate(R.layout.date_display,parent,false);
+                View dateView = inflater.inflate(R.layout.display_date,parent,false);
                 viewHolder = new DateViewHolder(dateView);
                 break;
 
             case WEEK:
-                View weekView = inflater.inflate(R.layout.week_display,parent,false);
+                View weekView = inflater.inflate(R.layout.display_week,parent,false);
                 viewHolder = new WeekViewHolder(weekView);
                 break;
             default:
-                View dateDef = inflater.inflate(R.layout.date_display,parent,false);
+                View dateDef = inflater.inflate(R.layout.display_date,parent,false);
                 viewHolder = new DateViewHolder(dateDef);
                 break;
 

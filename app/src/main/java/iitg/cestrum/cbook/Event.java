@@ -1,7 +1,5 @@
 package iitg.cestrum.cbook;
 
-import android.util.Log;
-
 import java.util.Objects;
 
 /**
@@ -47,8 +45,8 @@ public class Event {
     @Override
     public boolean equals(Object o) {
 
-        if( o instanceof  Event)
-            Log.d("CesBook","this event data = " + this.date_name + " Object date " + ((Event)o).getDate_name() );
+      //  if( o instanceof  Event)
+           // Log.d("CesBook","this event data = " + this.date_name + " Object date " + ((Event)o).getDate_name() );
 
 
         //return o instanceof Event && this.date_name.equals(((Event) o).getDate_name());
